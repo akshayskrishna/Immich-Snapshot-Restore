@@ -4,6 +4,16 @@ A restore script for Immich backups.
 
 This guide explains how the restore workflow works, what it validates, and how to run it safely on a fresh Immich install of the same version.
 
+If you want the backup tool
+
+- [Complete Snapshots](https://github.com/akshayskrishna/Immich-Backup-Snapshot)
+- [Incremental Backup](https://github.com/akshayskrishna/Immich-Incremental-Snapshot)
+
+### Tested on version
+
+- [*] v2.7.5
+- [*] v3.0.1
+
 ## What this tool does
 
 - finding the latest backup automatically when you provide a backup root
@@ -29,6 +39,13 @@ Before restoring, it checks:
 - the presence of a database dump in the selected backup
 
 If any of those checks fail, the script stops before touching the live data.
+
+### Caution
+
+> [!WARNING]
+>
+> - Urgent info that needs immediate user attention to avoid problems.
+> - This script assumes the user installing and running will be the main user, it has chown command hardcoded.
 
 ## Backup layout it expects
 
@@ -133,7 +150,7 @@ bash restore-immich-snapshot.sh \
 ```bash
 bash restore-immich-snapshot.sh \
   --immich-dir /path/to/immich-app \
-  --backup-dir /path/to/backups/immich-backup-2026-07-05_02-00-00 \
+  --backup-dir /path/to/backups/immich-backup-2026-xx-xx_xx-xx-xx \
   --yes
 ```
 
@@ -171,3 +188,5 @@ The ASCII branding style in this script is inspired by:
 4. Let the script validate the manifest.
 5. Restore the database and media.
 6. Confirm Immich starts cleanly afterward.
+
+> Updated on July 06, 2026
