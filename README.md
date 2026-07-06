@@ -98,7 +98,7 @@ After everything is restored, the script brings the stack back up.
 
 ## Usage
 
-### Interactive
+### Interactive (recommended)
 
 ```bash
 bash restore-immich-snapshot.sh
