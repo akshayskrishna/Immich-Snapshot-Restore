@@ -14,6 +14,9 @@ If you want the backup tool
 - [x] v2.7.5
 - [x] v3.0.1
 
+> [!CAUTION]
+> Do not mix between the version, the Immich instance will crash
+
 ## What this tool does
 
 - finding the latest backup automatically when you provide a backup root
@@ -44,7 +47,6 @@ If any of those checks fail, the script stops before touching the live data.
 
 > [!WARNING]
 >
-> - Urgent info that needs immediate user attention to avoid problems.
 > - This script assumes the user installing and running will be the main user, it has chown command hardcoded.
 
 ## Backup layout it expects
