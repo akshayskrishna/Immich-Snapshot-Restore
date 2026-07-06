@@ -27,6 +27,7 @@ The script:
   - checks the fresh install against the backup manifest
   - refuses to restore if the compose services/images do not match
   - restores the database dump, media library, and optional external library
+  - always normalizes ownership on the selected restore paths with sudo chown -R 1000:1000 before restore begins
 
 Options:
   --immich-dir PATH   Path to the Immich Docker compose folder
@@ -249,6 +250,22 @@ resolve_media_root() {
     MEDIA_ROOT="$(canonical_dir "$MEDIA_ROOT")"
 }
 
+repair_permissions() {
+    local -a targets=()
+
+    targets+=("$BACKUP_DIR" "$MEDIA_ROOT")
+    if [[ -n "$EXTERNAL_LIBRARY" ]]; then
+        targets+=("$EXTERNAL_LIBRARY")
+    fi
+
+    command -v sudo >/dev/null 2>&1 || die "sudo is required to repair permissions automatically. Run the restore with sudo once, or fix ownership manually."
+
+    log ""
+    log "Repairing ownership on the selected restore paths..."
+    log "Running: sudo chown -R 1000:1000 ${targets[*]}"
+    sudo chown -R 1000:1000 "${targets[@]}"
+}
+
 restore_database() {
     local dump_file="$1"
 
@@ -450,6 +467,8 @@ log "======================================================"
 if [[ "$AUTO_YES" == false ]]; then
     confirm "Proceed with the restore now?" || die "Cancelled by user."
 fi
+
+repair_permissions
 
 log ""
 log "Stopping the Immich compose stack..."

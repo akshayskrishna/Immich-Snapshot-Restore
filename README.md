@@ -14,6 +14,7 @@ This guide explains how the restore workflow works, what it validates, and how t
 - restoring the PostgreSQL database dump
 - restoring the media library
 - restoring the external library when one was backed up
+- normalizing ownership on the selected restore paths with `sudo chown -R 1000:1000` before restore begins
 - starting Immich again after the restore
 
 ## Safety checks
@@ -106,6 +107,12 @@ The script restores:
 After everything is restored, the script brings the stack back up.
 
 ## Usage
+
+### Download the script
+
+```bash
+wget https://raw.githubusercontent.com/akshayskrishna/Immich-Snapshot-Restore/main/restore-immich-snapshot.sh
+```
 
 ### Interactive (recommended)
 
