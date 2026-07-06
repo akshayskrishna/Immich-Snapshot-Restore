@@ -11,8 +11,8 @@ If you want the backup tool
 
 ### Tested on version
 
-- [*] v2.7.5
-- [*] v3.0.1
+- [x] v2.7.5
+- [x] v3.0.1
 
 ## What this tool does
 
