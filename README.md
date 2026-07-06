@@ -7,7 +7,8 @@ This guide explains how the restore workflow works, what it validates, and how t
 ## What this tool does
 
 - finding the latest backup automatically when you provide a backup root
-- reading the `backup-manifest.json` written by the backup script
+- accepting either `immich-backup-*` or `immich-snapshot-*` backup folders
+- reading the `backup-manifest.json` written by the backup script when it is available
 - checking the current Immich compose services and images against the manifest
 - refusing to restore if the compose shape does not match
 - restoring the PostgreSQL database dump
@@ -30,10 +31,18 @@ If any of those checks fail, the script stops before touching the live data.
 
 ## Backup layout it expects
 
-The restore script expects the backup tree created by the snapshot script:
+The restore script expects the backup tree created by the snapshot script. It accepts either of these folder patterns:
 
 ```text
 immich-backup-YYYY-MM-DD_HH-MM-SS/
+  backup-manifest.json
+  database/
+    immich-database-YYYY-MM-DD_HH-MM-SS.sql.gz
+  media/
+  external/        # only when an external library was backed up
+  logs/
+
+immich-snapshot-YYYY-MM-DD_HH-MM-SS/
   backup-manifest.json
   database/
     immich-database-YYYY-MM-DD_HH-MM-SS.sql.gz

@@ -128,7 +128,7 @@ find_latest_backup() {
     local candidate
 
     shopt -s nullglob
-    candidates=("$root"/immich-backup-*)
+    candidates=("$root"/immich-backup-* "$root"/immich-snapshot-*)
     shopt -u nullglob
 
     if (( ${#candidates[@]} == 0 )); then
@@ -136,10 +136,17 @@ find_latest_backup() {
     fi
 
     printf '%s\n' "${candidates[@]}" | sort | while IFS= read -r candidate; do
-        [[ -d "$candidate/database" ]] || continue
+        [[ -d "$candidate" ]] || continue
         compgen -G "$candidate/database/immich-database-*.sql.gz" >/dev/null || continue
         printf '%s\n' "$candidate"
     done | tail -n 1
+}
+
+looks_like_backup_dir() {
+    local dir="$1"
+    [[ -d "$dir/database" ]] || return 1
+    compgen -G "$dir/database/immich-database-*.sql.gz" >/dev/null || return 1
+    return 0
 }
 
 select_backup_dir() {
@@ -152,9 +159,15 @@ select_backup_dir() {
     fi
 
     BACKUP_ROOT="$(canonical_dir "$BACKUP_ROOT")"
+
+    if looks_like_backup_dir "$BACKUP_ROOT"; then
+        BACKUP_DIR="$BACKUP_ROOT"
+        return 0
+    fi
+
     BACKUP_DIR="$(find_latest_backup "$BACKUP_ROOT" 2>/dev/null || true)"
 
-    [[ -n "$BACKUP_DIR" ]] || die "No immich-backup-* directories were found in: $BACKUP_ROOT"
+    [[ -n "$BACKUP_DIR" ]] || die "No immich-backup-* or immich-snapshot-* directories were found in: $BACKUP_ROOT"
 }
 
 find_manifest_file() {
@@ -243,6 +256,21 @@ restore_database() {
     log "Starting database service..."
     docker compose -f "$COMPOSE_FILE" up -d "$DB_SERVICE"
 
+    log "Recreating database..."
+    docker compose -f "$COMPOSE_FILE" exec -T "$DB_SERVICE" sh -lc '
+        set -eu
+        db_name="${DB_DATABASE_NAME:-${POSTGRES_DB:-}}"
+        db_user="${DB_USERNAME:-${POSTGRES_USER:-}}"
+
+        if [ -z "$db_name" ] || [ -z "$db_user" ]; then
+            echo "ERROR: The database container does not expose DB_DATABASE_NAME/DB_USERNAME or POSTGRES_DB/POSTGRES_USER." >&2
+            exit 1
+        fi
+
+        dropdb --if-exists --username="$db_user" "$db_name"
+        createdb --username="$db_user" --owner="$db_user" "$db_name"
+    '
+
     log "Restoring database dump..."
     gunzip -c "$dump_file" | docker compose -f "$COMPOSE_FILE" exec -T "$DB_SERVICE" sh -lc '
         set -eu
@@ -270,7 +298,7 @@ restore_tree() {
 
     mkdir -p "$destination"
     log "Restoring $label..."
-    rsync -a --human-readable --info=progress2 --stats "$source/" "$destination/"
+    rsync -a --no-owner --no-group --no-perms --human-readable --info=progress2 --stats "$source/" "$destination/"
 }
 
 cleanup() {
