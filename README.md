@@ -43,8 +43,6 @@ Before restoring, it checks:
 
 If any of those checks fail, the script stops before touching the live data.
 
-### Caution
-
 > [!WARNING]
 >
 > - This script assumes the user installing and running will be the main user, it has chown command hardcoded.
